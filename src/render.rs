@@ -1,5 +1,3 @@
-use std::println;
-
 use raylib::prelude::*;
 
 use crate::{tiles, world::World};
