@@ -5,6 +5,7 @@ mod tiles;
 mod render;
 mod world;
 mod player;
+mod collision;
 
 const IMAGE: &[u8] = include_bytes!("assets/spritesheet_tiles.png");
 

@@ -108,4 +108,9 @@ impl Player {
     pub fn set_position(&mut self, pos: Vector2) {
         self.position = pos;
     }
+
+    pub fn get_bounding_box(&self) -> Rectangle{
+        Rectangle::new(self.position.x, self.position.y, PLAYER_WIDTH, PLAYER_HEIGHT)
+    }
+
 }
