@@ -9,6 +9,7 @@ mod world;
 mod player;
 mod collision;
 mod entity;
+mod terrain;
 
 const IMAGE: &[u8] = include_bytes!("assets/spritesheet_tiles.png");
 
@@ -20,13 +21,17 @@ fn main() {
         .resizable()
         .build();
 
+    let mut world = world::World::generate();
     let mut player = player::Player::new();
-    player.set_position(Vector2::new(0.0, 10.0));
+
+    let x = world::MAX_WORLD_WIDTH as f32 / 2.0;
+    let y = world.surface_y(x as i32);
+    player.set_position(Vector2::new(x, y));
 
     let img = Image::load_image_from_mem(".png", IMAGE).unwrap();
     let tilesheet = rl.load_texture_from_image(&thread, &img).unwrap();
 
-    let mut world = world::World::generate();
+    
 
     while !rl.window_should_close() {
         let mut d = rl.begin_drawing(&thread);

@@ -54,6 +54,11 @@ impl Player {
         if handle.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_RIGHT) {
             world.set_tile(click.x, click.y, TileType::Grass);
         }
+
+        if handle.is_key_pressed(KeyboardKey::KEY_E){
+            self.set_velocity(self.get_velocity() + Vector2{x: 100.0, y: 0.0});
+        }
+
     }
 
     fn update_physics(&mut self, world: &mut World, handle: &RaylibDrawHandle) {

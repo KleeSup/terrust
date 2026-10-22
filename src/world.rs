@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use crate::{entity::Entity, tiles::TileType};
+use crate::{entity::Entity, terrain, tiles::TileType};
 
-pub const MAX_WORLD_WIDTH: usize = 100;
+pub const MAX_WORLD_WIDTH: usize = 256;
 pub const MAX_WORLD_HEIGHT: usize = 50;
 
 fn pack(x: f32, y: f32) -> u64{
@@ -11,20 +11,43 @@ fn pack(x: f32, y: f32) -> u64{
 
 pub struct World{
     tiles: HashMap<u64, TileType>,
+    pub seed: u32,
 }
 
 impl World {
 
-    pub fn generate() -> World{
-        let mut world = Self{tiles: HashMap::new()};
+    pub fn generate() -> World {
+        Self::generate_with_seed(1337)
+    }
 
-        for x in 0..MAX_WORLD_WIDTH{
-            for y in 0..5{
-                world.set_tile(x as f32, y as f32, TileType::Dirt);
+    pub fn generate_with_seed(seed: u32) -> World {
+        let mut world = Self { tiles: HashMap::new(), seed: seed, };
+
+        for x in 0..MAX_WORLD_WIDTH {
+            let surface = terrain::surface_height(x as i32, seed, MAX_WORLD_HEIGHT);
+            for y in 0..surface {
+                let tile = if y == surface - 1 {
+                    TileType::Grass
+                } else {
+                    TileType::Dirt
+                };
+                world.set_tile(x as f32, y as f32, tile);
             }
         }
+        world
+    }
 
-        return world;
+    /// Height of the first empty tile above the current surface.
+    pub fn surface_y(&self, x: i32) -> f32 {
+        if x < 0 || x >= MAX_WORLD_WIDTH as i32 {
+            return 0.0;
+        }
+        for y in (0..MAX_WORLD_HEIGHT).rev() {
+            if self.get_tile(x as f32, y as f32).is_some_and(|tile| tile.is_solid()) {
+                return y as f32 + 1.0;
+            }
+        }
+        0.0
     }
 
     #[inline]
@@ -68,17 +91,13 @@ impl World {
         let mut dx = velocity.x * delta;
         if dx != 0.0 {
             let min_x = pos.x.min(pos.x + dx).floor().max(0.0) as i32;
-            let max_x = (pos.x + size.x).max(pos.x + size.x + dx)
-                .ceil().min(MAX_WORLD_WIDTH as f32) as i32;
+            let max_x = (pos.x + size.x).max(pos.x + size.x + dx).ceil().min(MAX_WORLD_WIDTH as f32) as i32;
             let min_y = pos.y.floor().max(0.0) as i32;
-            let max_y = (pos.y + size.y)
-                .ceil().min(MAX_WORLD_HEIGHT as f32) as i32;
+            let max_y = (pos.y + size.y).ceil().min(MAX_WORLD_HEIGHT as f32) as i32;
 
             for x in min_x..max_x {
                 for y in min_y..max_y {
-                    if !self.get_tile(x as f32, y as f32)
-                        .is_some_and(|tile| tile.is_solid())
-                    {
+                    if !self.get_tile(x as f32, y as f32).is_some_and(|tile| tile.is_solid()){
                         continue;
                     }
 
@@ -112,17 +131,13 @@ impl World {
         let mut dy = velocity.y * delta;
         if dy != 0.0 {
             let min_x = pos.x.floor().max(0.0) as i32;
-            let max_x = (pos.x + size.x)
-                .ceil().min(MAX_WORLD_WIDTH as f32) as i32;
+            let max_x = (pos.x + size.x).ceil().min(MAX_WORLD_WIDTH as f32) as i32;
             let min_y = pos.y.min(pos.y + dy).floor().max(0.0) as i32;
-            let max_y = (pos.y + size.y).max(pos.y + size.y + dy)
-                .ceil().min(MAX_WORLD_HEIGHT as f32) as i32;
+            let max_y = (pos.y + size.y).max(pos.y + size.y + dy).ceil().min(MAX_WORLD_HEIGHT as f32) as i32;
 
             for x in min_x..max_x {
                 for y in min_y..max_y {
-                    if !self.get_tile(x as f32, y as f32)
-                        .is_some_and(|tile| tile.is_solid())
-                    {
+                    if !self.get_tile(x as f32, y as f32).is_some_and(|tile| tile.is_solid()){
                         continue;
                     }
 

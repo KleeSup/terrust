@@ -8,6 +8,7 @@ pub enum TileType {
     Air,
     Dirt,
     Grass,
+    Stone,
 }
 
 impl TileType {
@@ -17,7 +18,9 @@ impl TileType {
             Self::Air => return,
             Self::Dirt => (650.0, 130.0),
             Self::Grass => (650.0, 0.0),
+            Self::Stone => (260.0, 650.0),
         };
+        
 
         handle.draw_texture_pro(tilesheet, 
             Rectangle::new(x, y, ORIGINAL_SIZE, ORIGINAL_SIZE), 

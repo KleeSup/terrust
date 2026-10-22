@@ -11,6 +11,10 @@ pub fn minkowski_sum(a: Rectangle, b: Rectangle) -> Rectangle{
     };
 }
 
+pub fn aabb_overlaps(a: Rectangle, b: Rectangle) -> bool {
+    a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y
+}
+
 #[derive(Default, Clone, Copy)]
 pub struct RayResult{
     pub hit_pos: Vector2,
