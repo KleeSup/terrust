@@ -1,11 +1,14 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 use raylib::prelude::*;
 
+use crate::entity::Entity;
+
 mod tiles;
 mod render;
 mod world;
 mod player;
 mod collision;
+mod entity;
 
 const IMAGE: &[u8] = include_bytes!("assets/spritesheet_tiles.png");
 
@@ -18,7 +21,7 @@ fn main() {
         .build();
 
     let mut player = player::Player::new();
-    player.set_position(Vector2::new(0.0, 5.0));
+    player.set_position(Vector2::new(0.0, 10.0));
 
     let img = Image::load_image_from_mem(".png", IMAGE).unwrap();
     let tilesheet = rl.load_texture_from_image(&thread, &img).unwrap();

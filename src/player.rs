@@ -1,32 +1,29 @@
 use raylib::prelude::*;
 
-use crate::{render, tiles::TileType, world::World};
-
-const CAMERA_SPEED: f32 = 50.0;
+use crate::{entity::{Entity, EntityData}, render, tiles::TileType, world::World};
 
 const PLAYER_WIDTH: f32 = 0.9;
 const PLAYER_HEIGHT: f32 = 1.9;
 
-const GRAVITY: f32 = 1.0;
-const MAX_FALL_SPEED: f32 = GRAVITY * 5.0;
+const GRAVITY: f32 = 30.0;
+const MAX_FALL_SPEED: f32 = 20.0;
 
-const ACCELERATION: f32 = 1.0;
+const ACCELERATION: f32 = 45.0;
 const MAX_ACCELERATION: f32 = 7.0;
-const FRICTION: f32 = ACCELERATION;
+const FRICTION: f32 = 55.0;
 
-#[derive(Default)]
+const JUMP_SPEED: f32 = 10.0;
+
 pub struct Player{
-    pub position: Vector2,
+    data: EntityData,
     pub camera: Camera2D,
-    pub velocity: Vector2,
 }
 
 impl Player {
     pub fn new() -> Self {
         Self {
-            position: Vector2::zero(),
             camera: Camera2D::default(),
-            velocity: Vector2::zero(),
+            data: EntityData::default(),
         }
     }
 
@@ -35,20 +32,10 @@ impl Player {
         handle: &RaylibDrawHandle,
         world: &mut World,
     ) {
-        let delta = handle.get_frame_time();
-
-        // Move player in world coordinates
-        // if handle.is_key_down(KeyboardKey::KEY_D) {
-        //     self.position.x += CAMERA_SPEED * delta;
-        // }
-        // if handle.is_key_down(KeyboardKey::KEY_A) {
-        //     self.position.x -= CAMERA_SPEED * delta;
-        // }
-
         self.update_physics(world, handle);
 
         // Camera follows player
-        let center = self.position + Vector2::new(PLAYER_WIDTH * 0.5, 0.0);
+        let center = self.get_position() + Vector2::new(PLAYER_WIDTH * 0.5, 0.0);
         self.camera.target = render::world_to_render(center);
 
         // Configure zoom and center offset
@@ -69,35 +56,47 @@ impl Player {
         }
     }
 
-    fn update_physics(&mut self, world: &World, handle: &RaylibDrawHandle){
+    fn update_physics(&mut self, world: &mut World, handle: &RaylibDrawHandle) {
         let delta = handle.get_frame_time();
-        // if(self.velocity.y > -MAX_FALL_SPEED){
-        //     self.velocity.y -= GRAVITY;
-        // }
-        let left = handle.is_key_down(KeyboardKey::KEY_D);
-        let right = handle.is_key_down(KeyboardKey::KEY_A);
-        if left && self.velocity.x < MAX_ACCELERATION{
-            self.velocity.x = (self.velocity.x + ACCELERATION).min(MAX_ACCELERATION);
-        }
-        if right && self.velocity.x > -MAX_ACCELERATION{
-            self.velocity.x = (self.velocity.x - ACCELERATION).max(-MAX_ACCELERATION);
-        }
-        
-        if !left && !right && self.velocity.x != 0.0{
-            if self.velocity.x > 0.0{
-                self.velocity.x = (self.velocity.x - FRICTION).max(0.0);
-            }else{
-                self.velocity.x = (self.velocity.x + FRICTION).min(0.0);
+
+        let right = handle.is_key_down(KeyboardKey::KEY_D);
+        let left = handle.is_key_down(KeyboardKey::KEY_A);
+
+        let mut velocity = self.data.velocity;
+
+        // Horizontal acceleration
+        let direction = (right as i32 - left as i32) as f32;
+
+        if direction != 0.0 {
+            velocity.x = (
+                velocity.x + direction * ACCELERATION * delta
+            ).clamp(-MAX_ACCELERATION, MAX_ACCELERATION);
+        } else {
+            let friction = FRICTION * delta;
+
+            if velocity.x > 0.0 {
+                velocity.x = (velocity.x - friction).max(0.0);
+            } else {
+                velocity.x = (velocity.x + friction).min(0.0);
             }
         }
 
+        // Gravity (Y-up world)
+        if handle.is_key_pressed(KeyboardKey::KEY_SPACE) && self.is_on_ground() {
+            velocity.y = JUMP_SPEED;
+            self.data.grounded = false;
+        }
 
-        self.position.x += self.velocity.x * delta;
-        self.position.y += self.velocity.y * delta;
+        velocity.y = (velocity.y - GRAVITY * delta).max(-MAX_FALL_SPEED);
+        
+        self.set_velocity(velocity);
+
+        // Collision-aware movement
+        world.simulate(self, delta);
     }
 
     pub fn draw<T: RaylibDraw>(&self, handle: &mut T) {
-        let pos = render::world_to_render(self.position);
+        let pos = render::world_to_render(self.get_position());
 
         handle.draw_rectangle_rec(
             Rectangle::new(pos.x, pos.y - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT),
@@ -105,12 +104,17 @@ impl Player {
         );
     }
 
-    pub fn set_position(&mut self, pos: Vector2) {
-        self.position = pos;
-    }
 
-    pub fn get_bounding_box(&self) -> Rectangle{
-        Rectangle::new(self.position.x, self.position.y, PLAYER_WIDTH, PLAYER_HEIGHT)
-    }
+}
 
+impl Entity for Player {
+    fn data(&self) -> &EntityData {
+        &self.data
+    }
+    fn data_mut(&mut self) -> &mut EntityData {
+        &mut self.data
+    }
+    fn get_size(&self) -> Vector2{
+        Vector2 { x: PLAYER_WIDTH, y: PLAYER_HEIGHT }
+    }
 }

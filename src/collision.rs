@@ -1,25 +1,34 @@
 use raylib::prelude::*;
 
+pub fn minkowski_sum(a: Rectangle, b: Rectangle) -> Rectangle{
+    let width = a.width + b.width;
+    let height = a.height + b.height;
+    return Rectangle{
+        x: (b.x + b.width / 2.0) - (width / 2.0),
+        y: (b.y + b.height / 2.0) - (height / 2.0),
+        width: width,
+        height: height,
+    };
+}
+
 #[derive(Default, Clone, Copy)]
 pub struct RayResult{
-    hit_pos: Vector2,
-    normal: Vector2,
-    hit_time: f32,
-    is_hit: bool,
+    pub hit_pos: Vector2,
+    pub normal: Vector2,
+    pub hit_time: f32,
+    pub is_hit: bool,
 }
 
 pub fn does_ray_intersect_aabb(
     x: f32,
     y: f32,
     magnitude: Vector2,
-    aabb: Rectangle,
-    hit_pos: &mut Vector2,
-    normal: &mut Vector2,
-    hit_time: &mut f32,
-) -> bool {
+    aabb: Rectangle
+) -> RayResult {
     let mut entry = f32::NEG_INFINITY;
     let mut exit = f32::INFINITY;
     let mut hit_normal = Vector2::zero();
+    let mut result = RayResult::default();
 
     // X axis
     if magnitude.x != 0.0 {
@@ -40,8 +49,8 @@ pub fn does_ray_intersect_aabb(
         }
 
         exit = exit.min(far);
-    } else if x < aabb.x || x > aabb.x + aabb.width {
-        return false;
+    } else if x <= aabb.x || x >= aabb.x + aabb.width {
+        return result;
     }
 
     // Y axis
@@ -63,28 +72,29 @@ pub fn does_ray_intersect_aabb(
         }
 
         exit = exit.min(far);
-    } else if y < aabb.y || y > aabb.y + aabb.height {
-        return false;
+    } else if y <= aabb.y || y >= aabb.y + aabb.height {
+        return result;
     }
 
     // No intersection within the movement segment
     if entry >= exit || exit <= 0.0 || entry >= 1.0 {
-        return false;
+        return result;
     }
 
     // Starting inside the AABB has no entry face
     if entry < 0.0 {
-        return false;
+        return result;
     }
 
-    *hit_time = entry;
+    result.hit_time = entry;
 
-    *hit_pos = Vector2::new(
+    result.hit_pos = Vector2::new(
         x + magnitude.x * entry,
         y + magnitude.y * entry,
     );
 
-    *normal = hit_normal;
+    result.normal = hit_normal;
+    result.is_hit = true;
 
-    true
+    return result;
 }
