@@ -17,6 +17,7 @@ fn main() {
         .build();
 
     let mut player = player::Player::new();
+    player.set_position(Vector2::new(0.0, 5.0));
 
     let img = Image::load_image_from_mem(".png", IMAGE).unwrap();
     let tilesheet = rl.load_texture_from_image(&thread, &img).unwrap();

@@ -21,7 +21,7 @@ impl TileType {
 
         handle.draw_texture_pro(tilesheet, 
             Rectangle::new(x, y, ORIGINAL_SIZE, ORIGINAL_SIZE), 
-            Rectangle::new(pos.x, pos.y, 1.0, 1.0), 
+            Rectangle::new(pos.x, -pos.y - 1.0, 1.0, 1.0), 
             Vector2::zero(), 0.0, Color::WHITE);
     }
 

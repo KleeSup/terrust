@@ -45,10 +45,10 @@ pub fn draw_tile_map(
     );
 
     let min_x = min.x.floor() as i32;
-    let min_y = min.y.floor() as i32;
+    let min_y = (-max.y).floor() as i32;
 
     let max_x = max.x.ceil() as i32;
-    let max_y = max.y.ceil() as i32;
+    let max_y = (-min.y).ceil() as i32;
 
     for y in min_y..max_y {
         for x in min_x..max_x {
@@ -57,4 +57,19 @@ pub fn draw_tile_map(
             }
         }
     }
+}
+
+#[inline]
+pub fn world_to_render(world: Vector2) -> Vector2{
+    Vector2 { x: world.x, y: -world.y }
+}
+
+pub fn screen_to_world(
+    rl: &RaylibDrawHandle,
+    screen: Vector2,
+    camera: Camera2D,
+) -> Vector2 {
+    let p = rl.get_screen_to_world2D(screen, camera);
+
+    Vector2::new(p.x, -p.y)
 }
