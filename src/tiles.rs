@@ -3,7 +3,7 @@ use raylib::prelude::*;
 pub const TILE_SIZE: f32 = 32.0;
 const ORIGINAL_SIZE: f32 = 128.0;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TileType {
     Air,
     Dirt,

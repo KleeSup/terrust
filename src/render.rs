@@ -71,3 +71,18 @@ pub fn screen_to_world(
 
     Vector2::new(p.x, -p.y)
 }
+
+pub struct TextureRegion{
+    source: Rectangle,
+    texture: Texture2D,
+}
+
+impl TextureRegion{
+    pub fn draw<T : RaylibDraw>(&self, handle: &mut T, dest: Rectangle){
+        handle.draw_texture_pro(&self.texture, self.source, dest, Vector2::zero(), 0.0, Color::WHITE);
+    }
+}
+
+// pub trait Draw{
+//     fn draw<T : RaylibDraw>(&self, handle: &mut T, source: &Texture2D, pos: Vector2);
+// }

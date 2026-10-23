@@ -23,12 +23,7 @@ pub struct RayResult{
     pub is_hit: bool,
 }
 
-pub fn does_ray_intersect_aabb(
-    x: f32,
-    y: f32,
-    magnitude: Vector2,
-    aabb: Rectangle
-) -> RayResult {
+pub fn does_ray_intersect_aabb(x: f32, y: f32, magnitude: Vector2, aabb: Rectangle) -> RayResult {
     let mut entry = f32::NEG_INFINITY;
     let mut exit = f32::INFINITY;
     let mut hit_normal = Vector2::zero();

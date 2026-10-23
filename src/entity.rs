@@ -1,5 +1,7 @@
 use raylib::prelude::*;
 
+use crate::tiles::TileType;
+
 #[derive(Debug, Clone, Copy, Default)]
 pub struct EntityData{
     pub position: Vector2,
@@ -27,12 +29,7 @@ pub trait Entity{
     fn get_bounding_box(&self) -> Rectangle {
         let pos = self.get_position();
         let size = self.get_size();
-        Rectangle{
-            x: pos.x,
-            y: pos.y,
-            width: size.x,
-            height: size.y,
-        }
+        Rectangle{ x: pos.x, y: pos.y, width: size.x, height: size.y}
     }
     fn get_center(&self) -> Vector2{
         let bb = self.get_bounding_box();
@@ -43,4 +40,29 @@ pub trait Entity{
         self.data().grounded
     }
 
+}
+
+// -- ItemEntity --
+
+#[derive(Debug)]
+pub enum ItemType{
+    TileItem(TileType),
+}
+
+#[derive(Debug)]
+pub struct ItemEntity{
+    data: EntityData,
+    item: ItemType,
+}
+
+impl Entity for ItemEntity {
+    fn data(&self) -> &EntityData {
+        return &self.data;
+    }
+    fn data_mut(&mut self) -> &mut EntityData {
+        return &mut self.data;
+    }
+    fn get_size(&self) -> Vector2 {
+        Vector2 { x: 0.5, y: 0.5 }
+    }
 }
