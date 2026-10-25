@@ -9,6 +9,7 @@ pub enum TileType {
     Dirt,
     Grass,
     Stone,
+    CoalOre,
 }
 
 impl TileType {
@@ -19,6 +20,7 @@ impl TileType {
             Self::Dirt => (650.0, 130.0),
             Self::Grass => (650.0, 0.0),
             Self::Stone => (260.0, 650.0),
+            Self::CoalOre => (260.0, 260.0),
         };
         
 
